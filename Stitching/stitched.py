@@ -3,16 +3,17 @@ import cv2
 import glob
 import imutils
 
-print(cv2.__version__)
-print(hasattr(cv2, 'Stitcher_create'))
-img_paths = glob.glob('Stitching/unstitchedImg/*.jpg')
+img_paths = glob.glob('Stitching/unstitchedImg/*.jpeg')
 images = []
 
 for image in img_paths:
     img = cv2.imread(image)
-    images.append(img)
-    img_resized = cv2.resize(img, (800, 800))
-    cv2.imshow("Img",img_resized)
+
+    img_blurred = cv2.GaussianBlur(img, (5, 5), 0)
+
+    images.append(img_blurred)
+    img_resized = cv2.resize(img_blurred, (800, 800))
+    cv2.imshow("Img", img_resized)
     cv2.waitKey(0)
 
 print(f"BRead images: {len(images)}")
@@ -21,12 +22,9 @@ for i, img in enumerate(images):
 
 
 imageStitcher = cv2.Stitcher_create()
-
 error, stitched_img =imageStitcher.stitch(images)
 
-
 if not error:
-    print('ide nem jut el')
     cv2.imwrite("Stitching/stitchedOutP.jpg", stitched_img)
     print('Image created successfully!')
 
@@ -35,7 +33,6 @@ if not error:
     # to find the contour we needgray img
     # gray = for every pixel there willl be only 1 number
     gray = cv2.cvtColor(stitched_img, cv2.COLOR_BGR2GRAY)
-
     # makes the image white and blacvk
     thresh_img = cv2.threshold(gray, 0, 255 , cv2.THRESH_BINARY)[1]
 
@@ -56,10 +53,8 @@ if not error:
 
     # a black empty img
     mask = np.zeros(thresh_img.shape, dtype="uint8")
-
     # calculates where the rectange has to be on the black empy image
     x, y, w, h = cv2.boundingRect(areaOI)
-
     # on the empty mask it will draw a rectagle
     cv2.rectangle(mask, (x,y), (x + w, y + h), 255, -1)
 
@@ -94,3 +89,5 @@ if not error:
     cv2.imshow("Stitched Processed", stitched_img_r)
 
     cv2.waitKey(0)
+else:
+    print("error")
